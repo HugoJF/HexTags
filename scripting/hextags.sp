@@ -503,7 +503,11 @@ public Action RankMe_LoadTags(int client, int rank, any data)
 		if (selectedTags[client].ScoreTag[0] == '\0')
 			return;
 			
-		ReplaceString(selectedTags[client].ScoreTag, sizeof(CustomTags::ScoreTag), "{rmRank}", sRank);
+		if (iRank[client] > 0) {
+			ReplaceString(selectedTags[client].ScoreTag, sizeof(CustomTags::ScoreTag), "{rmRank}", sRank);
+		} else {
+			ReplaceString(selectedTags[client].ScoreTag, sizeof(CustomTags::ScoreTag), "{rmRank}", "-");
+		}
 		CS_SetClientClanTag(client, selectedTags[client].ScoreTag); //Instantly load the score-tag
 	}
 }
@@ -633,10 +637,15 @@ public Action CP_OnChatMessage(int& author, ArrayList recipients, char[] flagstr
 		ReplaceString(sNewName, sizeof(sNewName), "{rmPoints}", sPoints);
 		ReplaceString(sNewMessage, sizeof(sNewMessage), "{rmPoints}", sPoints);
 		
-		static char sRank[16];
-		IntToString(iRank[author], sRank, sizeof(sRank));
-		ReplaceString(sNewName, sizeof(sNewName), "{rmRank}", sRank);
-		ReplaceString(sNewMessage, sizeof(sNewMessage), "{rmRank}", sRank);
+		if (iRank[author] > 0) {
+			static char sRank[16];
+			IntToString(iRank[author], sRank, sizeof(sRank));
+			ReplaceString(sNewName, sizeof(sNewName), "{rmRank}", sRank);
+			ReplaceString(sNewMessage, sizeof(sNewMessage), "{rmRank}", sRank);
+		} else {
+			ReplaceString(sNewName, sizeof(sNewName), "{rmRank}", "-");
+			ReplaceString(sNewMessage, sizeof(sNewMessage), "{rmRank}", "-");
+		}
 	}
 	
 	//Rainbow Chat
@@ -1091,6 +1100,13 @@ void GetTags(int client, KeyValues kv)
 		{
 			Debug_Print("Contains rmRank");
 			RankMe_GetRank(client, RankMe_LoadTags);
+			static char sRank[16];
+			if (iRank[client] > 0) {
+				IntToString(iRank[client], sRank, sizeof(sRank));
+				ReplaceString(tags.ScoreTag, sizeof(tags.ScoreTag), "{rmRank}", sRank);
+			} else {
+				ReplaceString(tags.ScoreTag, sizeof(tags.ScoreTag), "{rmRank}", "-");
+			}
 		}
 		
 		Debug_Print("Setted tag: %s", tags.ScoreTag);
